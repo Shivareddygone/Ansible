@@ -1,0 +1,39 @@
+---
+- name: Configure apache2/httpd based on Os
+  hosts: all
+  tasks:
+    - name: Install apache2 on Ubuntu servers
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+    - name: Install httpd on RedHat servers
+      yum:
+        name: httpd
+        state: present
+        update_cache: yes
+      when: ansible_distribution == "RedHat"
+    - name: Edit the index.html file
+      copy:
+        content: "welcome"
+        dest: /var/www/html/index.html
+    - name: Restart apache2
+      service:
+        name: apache2
+        state: restarted
+      when: ansible_distribution == "Ubuntu"
+    - name: restart httpd
+      service:
+        name: httpd
+        state: restarted
+      when: ansible_distribution == "RedHat"
+    - name: Check apache/httpd response
+      uri:
+        url: "{{item}}"
+        status_code: 200
+      with_items:
+         - http://172.31.8.71
+         - http://172.31.9.137
+         - http://172.31.14.51
+
